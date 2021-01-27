@@ -2,6 +2,10 @@ import { StatusBar } from 'expo-status-bar';
 import 'react-native-gesture-handler';
 import React, { useEffect, useState } from 'react';
 import * as firebase from 'firebase';
+import { Provider } from 'react-redux';
+import { createStore, applyMiddleware } from 'redux';
+import rootReducer from './redux/reducers';
+import thunk from 'redux-thunk';
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -10,6 +14,8 @@ import { StyleSheet, Text, View } from 'react-native';
 import Landing from './components/auth/Landing';
 import Register from './components/auth/Register';
 import Login from './components/auth/Login';
+import Main from './components/Main';
+import Add from './components/main/Add';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyA-PRrLezsGHgHNY8FWQ5FjsFEuYNSWVSg',
@@ -25,6 +31,7 @@ if (firebase.apps.length === 0) {
   firebase.initializeApp(firebaseConfig);
 }
 
+const store = createStore(rootReducer, applyMiddleware(thunk));
 const Stack = createStackNavigator();
 
 export default function App() {
@@ -50,30 +57,41 @@ export default function App() {
       </View>
     );
   }
-  // if (!loggedIn) {
+  if (!loggedIn) {
+    return (
+      <NavigationContainer>
+        (
+        <Stack.Navigator initialRouteName="Landing">
+          <Stack.Screen
+            name="Landing"
+            component={Landing}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen name="Register" component={Register} />
+          <Stack.Screen name="Login" component={Login} />
+        </Stack.Navigator>
+        )
+      </NavigationContainer>
+    );
+  }
   return (
-    <NavigationContainer>
-      (
-      <Stack.Navigator initialRouteName="Landing">
-        <Stack.Screen
-          name="Landing"
-          component={Landing}
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen name="Register" component={Register} />
-        <Stack.Screen name="Login" component={Login} />
-      </Stack.Navigator>
-      )
-    </NavigationContainer>
+    <Provider store={store}>
+      <NavigationContainer>
+        <Stack.Navigator initialRouteName="Main">
+          <Stack.Screen
+            name="Main"
+            component={Main}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen name="Add" component={Add} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </Provider>
   );
-  // }
-  // return (
-  //   <View>
-  //     <Text>User is logged in</Text>
-  //   </View>
-  // );
 }
 
 const styles = StyleSheet.create({
